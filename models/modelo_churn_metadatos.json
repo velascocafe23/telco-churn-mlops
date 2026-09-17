@@ -1,0 +1,33 @@
+{
+  "familia": "logistica",
+  "umbral_decision": 0.561944,
+  "columnas_entrada": [
+    "gender",
+    "SeniorCitizen",
+    "Partner",
+    "Dependents",
+    "tenure",
+    "PhoneService",
+    "MultipleLines",
+    "InternetService",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
+    "Contract",
+    "PaperlessBilling",
+    "PaymentMethod",
+    "MonthlyCharges",
+    "TotalCharges"
+  ],
+  "metricas_prueba": {
+    "f1": 0.6205,
+    "precision": 0.5395,
+    "exhaustividad": 0.7299,
+    "roc_auc": 0.8411
+  },
+  "f1_modelo_base": 0.62,
+  "semilla": 42
+}
