@@ -59,6 +59,10 @@ from pipelines.feature_pipeline.feature_pipeline import (  # noqa: E402
     IDENTIFICADOR,
     OBJETIVO,
 )
+from pipelines.training_pipeline.verificacion_particion import (  # noqa: E402
+    ResultadoParticion,
+    verificar_particion,
+)
 
 RAIZ = Path(__file__).resolve().parents[3]
 ATRIBUTOS_POR_DEFECTO = RAIZ / "data" / "04_feature" / "telco_features.parquet"
@@ -188,6 +192,39 @@ def dividir_datos(
     return partes[0], partes[1], partes[2], partes[3]
 
 
+class ErrorDeParticion(Exception):
+    """Se levanta cuando la particion no es apta para entrenar y evaluar."""
+
+
+def comprobar_particion(
+    entrenamiento_x: pd.DataFrame,
+    prueba_x: pd.DataFrame,
+    entrenamiento_y: pd.Series,
+    prueba_y: pd.Series,
+) -> ResultadoParticion:
+    """Verifica la particion antes de entrenar y detiene el proceso si es invalida.
+
+    Un solo registro compartido entre conjuntos invalida la evaluacion posterior, de
+    modo que conviene descubrirlo aqui y no despues de haber reportado metricas.
+    """
+    resultado = verificar_particion(entrenamiento_x, prueba_x, entrenamiento_y, prueba_y)
+
+    for clave, valor in resultado.reporte.items():
+        registro.debug("Particion | %s: %s", clave, valor)
+
+    for advertencia in resultado.advertencias:
+        registro.warning(advertencia)
+
+    if not resultado.valida:
+        for error in resultado.errores:
+            registro.error(error)
+        mensaje = f"La particion no supero las verificaciones ({len(resultado.errores)} errores)"
+        raise ErrorDeParticion(mensaje)
+
+    registro.info("Particion verificada: indices disjuntos, estratificacion y distribuciones")
+    return resultado
+
+
 def optimizar_umbral(pipeline: Pipeline, atributos: pd.DataFrame, objetivo: pd.Series) -> float:
     """Elige el umbral que maximiza el F1 sobre predicciones de validacion cruzada.
 
@@ -270,6 +307,8 @@ def entrenar(origen: Path, destino_modelo: Path, destino_metadatos: Path) -> dic
 
     entrenamiento_x, prueba_x, entrenamiento_y, prueba_y = dividir_datos(atributos, objetivo)
 
+    verificacion = comprobar_particion(entrenamiento_x, prueba_x, entrenamiento_y, prueba_y)
+
     pipeline = construir_pipeline()
     resultados_cv = medir_validacion_cruzada(pipeline, entrenamiento_x, entrenamiento_y)
     registro.info(
@@ -302,6 +341,7 @@ def entrenar(origen: Path, destino_modelo: Path, destino_metadatos: Path) -> dic
         "metricas_prueba": metricas_prueba,
         "metricas_entrenamiento": metricas_entrenamiento,
         "validacion_cruzada": resultados_cv,
+        "verificacion_particion": verificacion.reporte,
         "registros_entrenamiento": len(entrenamiento_x),
         "registros_prueba": len(prueba_x),
         "semilla": SEMILLA,
@@ -337,6 +377,9 @@ def main(argumentos: Sequence[str] | None = None) -> int:
 
     try:
         entrenar(opciones.atributos, opciones.modelo, opciones.metadatos)
+    except ErrorDeParticion as error:
+        registro.error("%s. No se entreno ningun modelo.", error)
+        return 1
     except (ValueError, FileNotFoundError):
         registro.exception("El pipeline de entrenamiento fallo")
         return 1
