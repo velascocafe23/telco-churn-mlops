@@ -1,0 +1,25 @@
+customerID,Contract,tenure,MonthlyCharges,probabilidad_cancelacion,en_riesgo
+7398-SKNQZ,Month-to-month,3,94.9,0.8946,True
+6892-EZDTG,Month-to-month,4,91.65,0.8878,True
+1915-IOFGU,Month-to-month,1,70.5,0.8156,True
+7278-CKDNC,Month-to-month,24,80.5,0.7643,True
+3898-GUYTS,Month-to-month,45,97.05,0.563,True
+2075-RMJIK,Month-to-month,5,49.4,0.5037,False
+2886-KEFUM,One year,63,107.5,0.4748,False
+8444-WRIDW,Month-to-month,66,80.45,0.4661,False
+6967-QIQRV,One year,15,101.9,0.4421,False
+3506-LCJDC,Month-to-month,1,19.95,0.2921,False
+9114-VEPUF,One year,62,96.1,0.2854,False
+9357-UJRUN,One year,24,58.35,0.2817,False
+5651-CRHKQ,One year,41,86.2,0.2775,False
+7277-KAMWT,Two year,13,20.0,0.1396,False
+1245-HARPS,Two year,14,20.4,0.1369,False
+3378-AJRAO,One year,44,24.85,0.1115,False
+0412-UCCNP,Two year,55,59.2,0.1079,False
+3985-HOYPM,One year,26,19.4,0.1076,False
+6203-HBZPA,Two year,52,63.9,0.1005,False
+3938-YFPXD,Two year,72,84.3,0.0727,False
+7306-YDSOI,Two year,69,59.75,0.0538,False
+7167-PCEYD,Two year,67,19.8,0.0513,False
+4636-TVXVG,One year,62,19.95,0.0433,False
+2607-DHDAK,Two year,72,19.8,0.035,False

@@ -3,24 +3,12 @@
 Aplicación Streamlit que expone el modelo de predicción de cancelación de clientes en dos
 modos de uso.
 
-## Requisitos
+## Aplicación desplegada
 
-El modelo entrenado debe existir en el repositorio:
+**https://telco-churn-mlops-upb-sva.streamlit.app**
 
-- `models/modelo_churn.joblib`
-- `models/modelo_churn_metadatos.json`
-
-Ambos se generan al ejecutar el notebook `notebooks/5-models/6-seleccion-modelo.ipynb`, y
-están versionados, así que no hace falta reentrenar para ejecutar la demo.
-
-## Ejecución local
-
-```bash
-uv sync
-uv run streamlit run streamlit_app.py
-```
-
-La aplicación queda disponible en `http://localhost:8501`.
+Desplegada en Streamlit Community Cloud desde la rama `main`. Cada cambio en el
+repositorio se refleja automáticamente en la aplicación.
 
 ## Modos de uso
 
@@ -29,14 +17,36 @@ La aplicación queda disponible en `http://localhost:8501`.
 Formulario con los diecinueve atributos que requiere el modelo. Devuelve la probabilidad
 estimada de cancelación y la decisión correspondiente al umbral configurado.
 
+Para probarlo: con los valores por defecto (contrato mes a mes, antigüedad de 12 meses,
+cargo mensual de 70) la probabilidad ronda el 73% y el cliente se marca en riesgo. Al
+cambiar el contrato a `Two year` y subir la antigüedad a 60 meses, la probabilidad cae
+por debajo del umbral.
+
 ### Procesamiento por lote
 
 Carga de un archivo CSV con varios clientes. La aplicación valida que estén todas las
-columnas requeridas, calcula las predicciones y permite descargar el resultado ordenado por
-probabilidad descendente, que es el orden en que conviene contactar a los clientes.
+columnas requeridas, calcula las predicciones y permite descargar el resultado ordenado
+por probabilidad descendente, que es el orden en que conviene contactar a los clientes.
 
-El archivo `app/ejemplos/clientes_ejemplo.csv` sirve como plantilla y se puede descargar
-desde la propia aplicación.
+Archivos de referencia:
+
+| Archivo | Contenido |
+|---|---|
+| `app/ejemplos/clientes_ejemplo.csv` | Entrada: 24 clientes, ocho por cada tipo de contrato |
+| `app/ejemplos/predicciones_ejemplo.csv` | Salida esperada para ese archivo |
+
+Sobre el archivo de ejemplo, el resultado es de 24 clientes evaluados, 5 en riesgo, 20.8%.
+Ese mismo resultado se obtiene ejecutando el pipeline de inferencia por línea de comandos,
+lo que confirma que ambas vías comparten modelo, transformaciones y umbral.
+
+## Ejecución local
+
+```bash
+uv sync
+uv run streamlit run streamlit_app.py
+```
+
+Disponible en `http://localhost:8501`.
 
 ## Umbral de decisión
 
@@ -54,12 +64,37 @@ Según el análisis del notebook de interpretación, sobre el conjunto de prueba
 | 5 a 1 | 0.31 | 809 | 347 de 374 |
 | 10 a 1 | 0.28 | 853 | 354 de 374 |
 
-## Normalización de los datos de entrada
+## Arquitectura
 
-La aplicación normaliza los archivos cargados antes de predecir: unifica la representación
-de los valores ausentes, convierte los cargos a numérico e interpreta la condición de
-adulto mayor cuando llega codificada como cero y uno.
+La aplicación no implementa lógica de transformación propia. Importa `construir_atributos`
+del pipeline de atributos, de modo que aplica exactamente las mismas transformaciones que
+se usaron durante el entrenamiento.
 
-Esto es necesario porque el modelo fue entrenado sobre datos ya normalizados. Un archivo en
-el formato original de la fuente, sin esa preparación, produciría indicadores en cero para
-esa columna y el modelo degradaría su predicción sin emitir ningún aviso.
+Del modelo carga dos cosas: el pipeline serializado, que incluye el preprocesamiento
+ajustado, y los metadatos, de donde obtiene el umbral de decisión y la lista de columnas
+esperadas. La interfaz no tiene conocimiento propio del modelo: si se reentrena con otra
+configuración, la aplicación se adapta sin cambios de código.
+
+## Despliegue
+
+Streamlit Community Cloud instala dependencias desde `requirements.txt`, no desde
+`pyproject.toml`. Ese archivo declara las dependencias directas y deja que la plataforma
+resuelva las transitivas.
+
+`scikit-learn` va fijada a la versión exacta con la que se serializó el modelo.
+Deserializar un pipeline con una versión distinta produce avisos de incompatibilidad y,
+ante cambios internos de la librería, puede fallar.
+
+La versión de Python se fija en 3.12 en la configuración avanzada del despliegue, para que
+coincida con la del proyecto.
+
+## Evidencia
+
+Las capturas de `app/capturas/` documentan el funcionamiento:
+
+| Captura | Contenido |
+|---|---|
+| 01 a 06 | Ejecución local, ambas modalidades |
+| 07 y 08 | Ejecución local tras reentrenar el modelo con el atributo derivado |
+| 09 | Predicción individual en la aplicación desplegada |
+| 10 | Procesamiento por lote en la aplicación desplegada |
