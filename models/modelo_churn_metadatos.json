@@ -1,6 +1,6 @@
 {
   "familia": "logistica",
-  "umbral_decision": 0.561944,
+  "umbral_decision": 0.561574,
   "columnas_entrada": [
     "gender",
     "SeniorCitizen",
@@ -22,12 +22,55 @@
     "MonthlyCharges",
     "TotalCharges"
   ],
+  "columnas_modelo": [
+    "gender",
+    "SeniorCitizen",
+    "Partner",
+    "Dependents",
+    "tenure",
+    "PhoneService",
+    "MultipleLines",
+    "InternetService",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
+    "Contract",
+    "PaperlessBilling",
+    "PaymentMethod",
+    "MonthlyCharges",
+    "TotalCharges",
+    "servicios_contratados"
+  ],
+  "atributos_derivados": [
+    "servicios_contratados"
+  ],
+  "hiperparametros": {
+    "C": 0.01,
+    "class_weight": "balanced",
+    "max_iter": 1000
+  },
   "metricas_prueba": {
     "f1": 0.6205,
     "precision": 0.5395,
     "exhaustividad": 0.7299,
-    "roc_auc": 0.8411
+    "exactitud_balanceada": 0.7524,
+    "roc_auc": 0.841
   },
-  "f1_modelo_base": 0.62,
+  "metricas_entrenamiento": {
+    "f1": 0.6377,
+    "precision": 0.5596,
+    "exhaustividad": 0.7411,
+    "exactitud_balanceada": 0.7652,
+    "roc_auc": 0.8476
+  },
+  "validacion_cruzada": {
+    "f1_media": 0.6308,
+    "f1_desviacion": 0.021
+  },
+  "registros_entrenamiento": 5634,
+  "registros_prueba": 1409,
   "semilla": 42
 }
