@@ -8,6 +8,10 @@ entrenamiento, la inferencia por lote y la aplicacion de despliegue lo importan,
 modo que las transformaciones aplicadas en produccion son necesariamente las mismas
 del entrenamiento.
 
+Antes de persistir, los atributos pasan por las validaciones de `validacion.py`. Si
+alguna regla obligatoria falla, el pipeline se detiene y no escribe el archivo de
+salida.
+
 Ejecucion:
 
     uv run python src/pipelines/feature_pipeline/feature_pipeline.py
@@ -23,6 +27,20 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import pandas as pd
+
+# Permite ejecutar este archivo directamente como script. Al hacerlo, Python solo
+# anade al path el directorio del propio archivo, no la raiz de `src`, de modo que
+# el import absoluto no resolveria. Bajo pytest esto es redundante, porque la
+# configuracion del proyecto ya declara `src` en pythonpath.
+DIRECTORIO_FUENTES = Path(__file__).resolve().parents[2]
+if str(DIRECTORIO_FUENTES) not in sys.path:
+    sys.path.insert(0, str(DIRECTORIO_FUENTES))
+
+from pipelines.feature_pipeline.validacion import (  # noqa: E402
+    ErrorDeValidacion,
+    ResultadoValidacion,
+    validar,
+)
 
 RAIZ = Path(__file__).resolve().parents[3]
 ORIGEN_POR_DEFECTO = RAIZ / "data" / "01_raw" / "telco_customer_churn.csv"
@@ -188,6 +206,28 @@ def verificar_columnas(datos: pd.DataFrame, requeridas: Sequence[str]) -> list[s
     return [columna for columna in requeridas if columna not in datos.columns]
 
 
+def aplicar_validaciones(atributos: pd.DataFrame) -> ResultadoValidacion:
+    """Valida los atributos y detiene el pipeline si incumplen las reglas.
+
+    Las advertencias se registran y permiten continuar. Los errores impiden la
+    persistencia: es preferible no producir un archivo a producir uno que las
+    etapas siguientes consumirian como si fuera correcto.
+    """
+    resultado = validar(atributos)
+
+    for advertencia in resultado.advertencias:
+        registro.warning(advertencia)
+
+    if not resultado.valido:
+        for error in resultado.errores:
+            registro.error(error)
+        mensaje = f"Los datos no superaron la validacion ({len(resultado.errores)} errores)"
+        raise ErrorDeValidacion(mensaje)
+
+    registro.info("Validacion superada: esquema, integridad y distribucion")
+    return resultado
+
+
 def guardar_atributos(datos: pd.DataFrame, destino: Path) -> Path:
     """Persiste los atributos en formato columnar, conservando los tipos."""
     destino.parent.mkdir(parents=True, exist_ok=True)
@@ -208,6 +248,8 @@ def ejecutar(origen: Path, destino: Path) -> pd.DataFrame:
 
     atributos = construir_atributos(crudos)
     registro.info("Atributos construidos: %d columnas", atributos.shape[1])
+
+    aplicar_validaciones(atributos)
 
     guardar_atributos(atributos, destino)
     return atributos
@@ -252,6 +294,11 @@ def main(argumentos: Sequence[str] | None = None) -> int:
 
     try:
         ejecutar(opciones.origen, opciones.destino)
+    except ErrorDeValidacion as error:
+        # Los mensajes de cada regla incumplida ya se registraron. La traza no
+        # aportaria nada: el fallo es del dato, no del codigo.
+        registro.error("%s. No se genero archivo de salida.", error)
+        return 1
     except (ValueError, FileNotFoundError):
         registro.exception("El pipeline de atributos fallo")
         return 1
