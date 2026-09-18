@@ -13,6 +13,7 @@ Ejecucion local:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +22,18 @@ import pandas as pd
 import streamlit as st
 
 RAIZ = Path(__file__).parent
+
+# La logica de construccion de atributos vive en el pipeline, no aqui. Importarla
+# garantiza que la aplicacion aplique exactamente las mismas transformaciones que
+# se usaron durante el entrenamiento.
+DIRECTORIO_FUENTES = RAIZ / "src"
+if str(DIRECTORIO_FUENTES) not in sys.path:
+    sys.path.insert(0, str(DIRECTORIO_FUENTES))
+
+from pipelines.feature_pipeline.feature_pipeline import (  # noqa: E402
+    construir_atributos,
+)
+
 MODELO_FILE = RAIZ / "models" / "modelo_churn.joblib"
 METADATOS_FILE = RAIZ / "models" / "modelo_churn_metadatos.json"
 EJEMPLO_FILE = RAIZ / "app" / "ejemplos" / "clientes_ejemplo.csv"
@@ -83,7 +96,6 @@ ETIQUETAS: dict[str, str] = {
 }
 
 COLUMNAS_NUMERICAS = list(RANGOS_NUMERICOS)
-MARCADORES_NULOS = ["", " ", "NA", "N/A", "na", "null", "NULL", "?", "-"]
 
 
 @st.cache_resource
@@ -95,32 +107,14 @@ def cargar_modelo() -> tuple[Any, dict[str, Any]]:
 
 
 def normalizar(datos: pd.DataFrame) -> pd.DataFrame:
-    """Aplica al lote las mismas normalizaciones usadas en el entrenamiento.
+    """Prepara los datos de entrada aplicando la construccion de atributos oficial.
 
-    El modelo fue entrenado sobre datos donde los ausentes estan unificados, los
-    cargos son numericos y la condicion de adulto mayor esta codificada como texto.
-    Un archivo que llegue con el formato original de la fuente debe normalizarse
-    antes de predecir, o la codificacion produciria indicadores en cero sin avisar.
+    Delega en el pipeline de atributos, que unifica los valores ausentes, convierte
+    los tipos y calcula los atributos derivados. Duplicar esa logica aqui produciria
+    tarde o temprano una divergencia silenciosa entre lo que ve el modelo en
+    entrenamiento y lo que recibe en produccion.
     """
-    preparados = datos.copy()
-
-    for columna in preparados.select_dtypes(include=["object", "string"]).columns:
-        serie = preparados[columna].astype("string").str.strip()
-        preparados[columna] = serie.mask(serie.isin(MARCADORES_NULOS), pd.NA)
-
-    if "SeniorCitizen" in preparados.columns:
-        valores = preparados["SeniorCitizen"]
-        if pd.api.types.is_numeric_dtype(valores):
-            preparados["SeniorCitizen"] = valores.map({0: NO, 1: SI})
-
-    for columna in COLUMNAS_NUMERICAS:
-        if columna in preparados.columns:
-            preparados[columna] = pd.to_numeric(preparados[columna], errors="coerce")
-
-    if "TotalCharges" in preparados.columns:
-        preparados["TotalCharges"] = preparados["TotalCharges"].fillna(0)
-
-    return preparados
+    return construir_atributos(datos)
 
 
 def validar_columnas(datos: pd.DataFrame, esperadas: list[str]) -> list[str]:
@@ -237,7 +231,7 @@ def pestana_lote(modelo: Any, esperadas: list[str], umbral: float) -> None:
     st.success(f"Archivo válido: {len(datos)} registros.")
 
     preparados = normalizar(datos)
-    resultado = predecir(modelo, preparados[esperadas], umbral)
+    resultado = predecir(modelo, preparados, umbral)
 
     salida = datos.copy()
     salida["probabilidad_cancelacion"] = resultado["probabilidad_cancelacion"].to_numpy()
