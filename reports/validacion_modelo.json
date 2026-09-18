@@ -1,0 +1,11 @@
+{
+  "diagnostico": "sobreajuste",
+  "f1_entrenamiento": 0.6864,
+  "f1_validacion_cruzada": 0.587,
+  "f1_prueba": 0.5116,
+  "desviacion_validacion": 0.0832,
+  "brecha_entrenamiento_validacion": 0.0994,
+  "brecha_validacion_prueba": 0.0754,
+  "f1_modelo_base": 0.62,
+  "mejora_sobre_base": -0.1084
+}

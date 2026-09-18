@@ -96,6 +96,17 @@
     "valor_p_PaperlessBilling": 0.7589,
     "valor_p_PaymentMethod": 0.9291
   },
+  "validacion_modelo": {
+    "diagnostico": "adecuado",
+    "f1_entrenamiento": 0.6377,
+    "f1_validacion_cruzada": 0.6308,
+    "f1_prueba": 0.6205,
+    "desviacion_validacion": 0.021,
+    "brecha_entrenamiento_validacion": 0.0069,
+    "brecha_validacion_prueba": 0.0103,
+    "f1_modelo_base": 0.62,
+    "mejora_sobre_base": 0.0005
+  },
   "registros_entrenamiento": 5634,
   "registros_prueba": 1409,
   "semilla": 42
