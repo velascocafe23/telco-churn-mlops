@@ -1,171 +1,219 @@
-# Template for data science with Python 3.12 and devcontainer
+# Predicción de cancelación de clientes
 
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3120/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/JoseRZapata/data-science-project-template/branch/main/graph/badge.svg?token=G9K6YJ8J6W)](https://codecov.io/gh/JoseRZapata/data-science-project-template)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/charliermarsh/ruff)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
-[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+Sistema de predicción de fuga de clientes en una empresa de telecomunicaciones,
+desarrollado como trabajo final del curso **Ciencia de Datos en Producción**
+(Universidad Pontificia Bolivariana, prof. Jose R. Zapata).
 
-This is a data science project template created with [Cookiecutter] to help you start your next data science or machine learning project quickly and efficiently. It includes a well-organized folder structure, essential tools for code quality, testing, and documentation, and follows best practices in the industry.
-
-Using the data science project template <https://github.com/JoseRZapata/data-science-project-template>
-
-- `Python` = `3.12`
-- `devcontainer` to work in `VSCode` or [GitHub Codespaces](https://github.com/features/codespaces) using the same environment as in production.
-
-## ✨ Features and Tools
-
-Information about all the features and tools used in this project: <https://joserzapata.github.io/data-science-project-template/#features-and-tools>
-
-Features                                     | Package  | Why?
- ---                                         | ---      | ---
-Dependencies and env                         | [UV] | [article](https://astral.sh/blog/uv)
-Lint - Format, sort imports  (Code Quality)  | [Ruff] | [article](https://www.sicara.fr/blog-technique/boost-code-quality-ruff-linter)
-Static type checking                         | [Mypy] | [article](https://python.plainenglish.io/does-python-need-types-79753b88f521)
-code security                                | [bandit] | [article](https://blog.bytehackr.in/secure-your-python-code-with-bandit)
-Code quality & security each commit          | [pre-commit] | [article](https://dev.to/techishdeep/maximize-your-python-efficiency-with-pre-commit-a-complete-but-concise-guide-39a5)
-Test code                                    | [Pytest] | [article](https://realpython.com/pytest-python-testing/)
-Test coverage                                | [coverage.py] [codecov] | [article](https://martinxpn.medium.com/test-coverage-in-python-with-pytest-86-100-days-of-python-a3205c77296)
-Project Template                             | [Cruft] or [Cookiecutter] | [article](https://medium.com/@bctello8/standardizing-dbt-projects-at-scale-with-cookiecutter-and-cruft-20acc4dc3f74)
-Folder structure for data science projects   | [Data structure] | [article](https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71)
-Template for pull requests                   | [Pull Request template] | [article](https://www.awesomecodereviews.com/pull-request-template/)
-Template for notebooks                       | [Notebook template] |
-
-## Set up the environment
-
-1. Initialize git in local:
-
-    ```bash
-    make init_git
-    ```
-
-1. Set up the environment:
-
-    ```bash
-    make install_env
-    ```
-
-1. Activate virtual environment:
-
-    ```bash
-    source .venv/bin/activate
-    ```
-
-1. Install libraries for data science and machine learning:
-
-    ```bash
-    make install_data_libs
-    ```
-
-## Install dependencies
-
-After init the environment to install a new package, run:
-
-```bash
-uv add <package-name>
-```
-
-Example to install [plotly](https://plotly.com/python/) in dev group:
-
-```bash
-uv add --group dev plotly
-```
-
-## 🗃️ Project structure
-
-- [Data structure]
-- [Pipelines based on Feature/Training/Inference Pipelines](https://www.hopsworks.ai/post/mlops-to-ml-systems-with-fti-pipelines)
-
-```bash
-.
-├── codecov.yml                         # configuration for codecov
-├── .code_quality
-│   ├── mypy.ini                        # mypy configuration
-│   └── ruff.toml                       # ruff configuration
-├── data
-│   ├── 01_raw                          # raw immutable data
-│   ├── 02_intermediate                 # typed data
-│   ├── 03_primary                      # domain model data
-│   ├── 04_feature                      # model features
-│   ├── 05_model_input                  # often called 'master tables'
-│   ├── 06_models                       # serialized models
-│   ├── 07_model_output                 # data generated by model runs
-│   ├── 08_reporting                    # reports, results, etc
-│   └── README.md                       # description of the data structure
-├── docs                                # documentation for your project
-├── .editorconfig                       # editor configuration
-├── .github                             # github configuration
-│   ├── dependabot.md                   # github action to update dependencies
-│   ├── pull_request_template.md        # template for pull requests
-│   └── workflows                       # github actions workflows
-│       ├── ci.yml                      # run continuous integration (tests, pre-commit, etc.)
-│       ├── dependency_review.yml       # review dependencies
-│       ├── docs.yml                    # build documentation (mkdocs)
-│       └── pre-commit_autoupdate.yml   # update pre-commit hooks
-├── .gitignore                          # files to ignore in git
-├── Makefile                            # useful commands to setup environment, run tests, etc.
-├── models                              # store final models
-├── notebooks
-│   ├── 1-data                          # data extraction and cleaning
-│   ├── 2-exploration                   # exploratory data analysis (EDA)
-│   ├── 3-analysis                      # Statistical analysis, hypothesis testing.
-│   ├── 4-feat_eng                      # feature engineering (creation, selection, and transformation.)
-│   ├── 5-models                        # model training, evaluation, and hyperparameter tuning.
-│   ├── 6-interpretation                # model interpretation
-│   ├── 7-deploy                        # model packaging, deployment strategies.
-│   ├── 8-reports                       # story telling, summaries and analysis conclusions.
-│   ├── notebook_template.ipynb         # template for notebooks
-│   └── README.md                       # information about the notebooks
-├── .pre-commit-config.yaml             # configuration for pre-commit hooks
-├── pyproject.toml                      # dependencies for the python project
-├── README.md                           # description of your project
-├── src                                 # source code for use in this project
-│   ├── README.md                       # description of src structure
-│   ├── tmp_mock.py                     # example python file
-│   ├── data                            # data extraction, validation, processing, transformation
-│   ├── model                           # model training, evaluation, validation, export
-│   ├── inference                       # model prediction, serving, monitoring
-│   └── pipelines                       # orchestration of pipelines
-│       ├── feature_pipeline            # transforms raw data into features and labels
-│       ├── training_pipeline           # transforms features and labels into a model
-│       └── inference_pipeline          # takes features and a trained model for predictions
-├── tests                               # test code for your project
-│   ├── test_mock.py                    # example test file
-│   ├── data                            # tests for data module
-│   ├── model                           # tests for model module
-│   ├── inference                       # tests for inference module
-│   └── pipelines                       # tests for pipelines module
-└── .vscode                             # vscode configuration
-    ├── extensions.json                 # list of recommended extensions
-    ├── launch.json                     # vscode launch configuration
-    └── settings.json                   # vscode settings
-```
-
-## Credits
-
-This project was generated from [@JoseRZapata]'s [data science project template] template.
-
-## References
-
-- [Config devcontainer with python and UV](https://tech.dentsusoken.com/entry/2023/05/02/Dev_Container%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%E3%83%90%E3%82%A4%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%E3%81%A7%E4%BD%9C%E3%82%8BPython%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1)
+**Aplicación desplegada:** https://telco-churn-mlops-upb-sva.streamlit.app
 
 ---
-[@JoseRZapata]: https://github.com/JoseRZapata
 
-[bandit]: https://github.com/PyCQA/bandit
-[codecov]: https://codecov.io/
-[Cookiecutter]:https://cookiecutter.readthedocs.io/en/stable/
-[coverage.py]: https://coverage.readthedocs.io/
-[Cruft]: https://cruft.github.io/cruft/
-[data science project template]: https://github.com/JoseRZapata/data-science-project-template
-[Data structure]: https://github.com/JoseRZapata/data-science-project-template/blob/main/template-data-science-container/data/README.md
-[Mypy]: http://mypy-lang.org/
-[Notebook template]: template-data-science-container/notebooks/notebook_template.ipynb
-[pre-commit]: https://pre-commit.com/
-[Pull Request template]: template-data-science-container/.github/pull_request_template.md
-[Pytest]: https://docs.pytest.org/en/latest/
-[Ruff]: https://docs.astral.sh/ruff/
-[UV]: https://docs.astral.sh/uv/
+## El problema
+
+Anticipar qué clientes van a cancelar su servicio en el próximo ciclo de facturación, con
+antelación suficiente para que el equipo de retención pueda intervenir. Adquirir un cliente
+nuevo cuesta varias veces más que retener uno existente, de modo que el valor del sistema
+está en priorizar correctamente a quién contactar.
+
+**Datos:** Telco Customer Churn (IBM), 7.043 clientes, 21 atributos, clasificación binaria
+con desbalance moderado (26,5% de cancelación).
+
+**Encuadre:** aprendizaje supervisado, entrenamiento offline, inferencia por lote mensual
+con consulta individual como complemento.
+
+---
+
+## Resultados
+
+| Métrica | Valor |
+|---|---|
+| F1 sobre la clase de fuga | 0,6205 |
+| Precisión | 0,5395 |
+| Exhaustividad | 0,7299 |
+| ROC-AUC | 0,8411 |
+| Umbral de decisión | 0,562 |
+
+Sobre el conjunto de prueba, de 374 cancelaciones reales el modelo detecta 273, deja
+escapar 101 y genera 233 contactos innecesarios.
+
+### El hallazgo principal: el modelo no supera al modelo base
+
+Se evaluaron cinco familias de modelos, se optimizaron hiperparámetros, se ajustó el umbral
+de decisión y se incorporó un atributo derivado. El resultado final, F1 de 0,6205, es
+equivalente al del modelo base establecido en la fase de prueba de concepto, 0,620.
+
+**Esto no es una limitación del procedimiento sino su conclusión mejor sustentada.** Cuatro
+evidencias independientes convergen en el mismo diagnóstico:
+
+1. **La curva de aprendizaje es plana**, con una brecha de 0,0053 entre entrenamiento y
+   validación. Más datos no mejorarían el desempeño.
+2. **El 6,1% de los registros pertenece a perfiles de servicio con desenlace ambiguo**:
+   clientes con atributos idénticos y resultado opuesto. Ningún algoritmo puede resolverlo.
+3. **La búsqueda de hiperparámetros eligió regularización fuerte** (`C=0,01`). El modelo
+   rinde mejor cuando se le impide ajustarse, lo que ocurre cuando hay poca señal.
+4. **El 50,9% de los errores se concentra a menos de 0,15 del umbral**, frente al 18,0% de
+   los aciertos. El modelo no se equivoca con seguridad: se equivoca donde reconoce su
+   propia incertidumbre.
+
+El límite está en la información contenida en los atributos disponibles, no en la elección
+del algoritmo. La vía de mejora es incorporar atributos nuevos —reclamos, calidad de
+servicio percibida, interacciones con soporte— y no probar más modelos.
+
+### Otros hallazgos
+
+- **`Contract` en solitario alcanza el 91,6% del F1 del modelo completo.** Los otros
+  dieciocho atributos aportan en conjunto menos del 9% restante.
+- **La ponderación de clases no mejora el modelo, desplaza el umbral.** Ambas variantes del
+  modelo lineal obtienen el mismo ROC-AUC (0,8463): cambia dónde se corta el ordenamiento,
+  no la capacidad de ordenar.
+- **La familia más simple resultó la mejor.** Los modelos de árboles no aprovecharon la
+  interacción entre contrato y antigüedad, porque el pipeline ya la expone al modelo lineal
+  mediante la antigüedad discretizada en tramos.
+- **El atributo derivado `servicios_contratados` no aporta.** Es la suma de indicadores que
+  el modelo ya recibe por separado, y en un modelo lineal cualquier combinación lineal de
+  columnas existentes es redundante por construcción.
+
+---
+
+## Arquitectura
+
+```
+Datos crudos → Feature Pipeline → Training Pipeline → Modelo serializado
+                      ↓                                       ↓
+                 Validación                      Inference Pipeline / Aplicación
+```
+
+### Feature Pipeline
+
+`src/pipelines/feature_pipeline/`
+
+Convierte datos crudos en atributos. **Es la única fuente de verdad sobre la construcción de
+atributos**: el entrenamiento, la inferencia y la aplicación web lo importan, de modo que
+las transformaciones aplicadas en producción son necesariamente las del entrenamiento. No
+hay dos implementaciones que puedan divergir.
+
+Incluye validación en tres niveles: esquema (Pandera), integridad entre campos y
+distribución. Un fallo de esquema o integridad detiene el pipeline y **no persiste el
+archivo de salida**.
+
+### Training Pipeline
+
+`src/pipelines/training_pipeline/`
+
+Entrena, optimiza el umbral sobre predicciones de validación cruzada y persiste el modelo
+con sus metadatos. Antes de entrenar verifica la partición (fuga de información,
+estratificación, distribuciones) y después diagnostica el ajuste con umbrales declarados.
+
+### Inference Pipeline
+
+`src/pipelines/inference_pipeline/`
+
+Genera predicciones sobre datos nuevos, ordenadas por probabilidad descendente. Lee el
+umbral de los metadatos del modelo, no de una constante.
+
+### Aplicación
+
+`streamlit_app.py`
+
+Dos modalidades: evaluación individual mediante formulario y procesamiento por lote desde
+archivo. El umbral de decisión es configurable desde la interfaz.
+
+---
+
+## Ejecución
+
+```bash
+# Entorno
+uv sync
+
+# Pipeline completo
+uv run python src/pipelines/feature_pipeline/feature_pipeline.py
+uv run python src/pipelines/training_pipeline/train_pipeline.py
+uv run python src/pipelines/inference_pipeline/inference_pipeline.py
+
+# Aplicación
+uv run streamlit run streamlit_app.py
+
+# Pruebas
+uv run pytest
+```
+
+---
+
+## Estructura
+
+```
+├── notebooks/            Prueba de concepto, ocho notebooks
+│   ├── 1-data/           Descarga y encuadre del problema
+│   ├── 2-exploration/    Tipos de datos y valores ausentes
+│   ├── 3-analysis/       Análisis exploratorio
+│   ├── 4-feat_eng/       Pipeline de atributos
+│   ├── 5-models/         Modelo base y selección
+│   └── 6-interpretation/ Interpretación y análisis de errores
+├── src/pipelines/        Arquitectura FTI en scripts
+├── tests/                74 pruebas unitarias
+├── models/               Modelo serializado y metadatos
+├── reports/              Evidencia de validación
+├── app/                  Documentación, ejemplos y capturas
+└── streamlit_app.py      Aplicación de despliegue
+```
+
+---
+
+## Decisiones de diseño
+
+**El umbral de decisión es un parámetro de negocio, no del modelo.** El valor que maximiza
+el F1 (0,562) equivale a asumir una relación de costos de entre 2 y 3 a 1 entre no detectar
+una cancelación y contactar innecesariamente a un cliente. Optimizar F1 no es neutral:
+adopta ese supuesto sin declararlo. Por eso el umbral se almacena en los metadatos y se
+expone como control en la aplicación.
+
+**Se persiste el preprocesamiento sin ajustar.** Lo que se comparte entre etapas es la
+definición de las transformaciones, no los parámetros aprendidos, que deben ajustarse sobre
+cada conjunto de entrenamiento.
+
+**La comparación entre modelos usa una prueba estadística, no diferencias de medias.** Con
+desviaciones entre pliegues del orden de 0,02, una diferencia de 0,005 entre medias es
+ruido. La prueba t pareada con corrección de Nadeau y Bengio ajusta la varianza por el
+solapamiento entre pliegues de validación cruzada, que la prueba t ordinaria subestima.
+
+**El criterio de desempate se fijó antes de ejecutar:** a igualdad estadística, el modelo
+más simple y rápido. Elegir el criterio después de ver los resultados sería seleccionar la
+regla que favorece al modelo preferido.
+
+**La distinción entre error y advertencia es deliberada.** Un valor de categoría desconocido
+siempre es un problema y detiene el proceso. Una tasa de cancelación fuera del rango
+habitual puede reflejar un cambio real de la población, así que se registra sin detener la
+producción.
+
+---
+
+## Calidad del código
+
+- 74 pruebas unitarias
+- Linter y formateador (ruff) con reglas de bugbear, bandit, pylint y complejidad ciclomática
+- Verificación de tipos (mypy) con anotaciones obligatorias
+- Ganchos de pre-commit y validación de mensajes de commit
+- Integración continua en cada pull request
+- 16 issues, 32 pull requests, cada tarea con rama, commits convencionales y merge
+
+---
+
+## Trabajo futuro
+
+1. Incorporar atributos de comportamiento: reclamos, incidencias de servicio, interacciones
+   con soporte. Es la única vía que puede reducir la zona ambigua donde se concentran los
+   errores.
+2. Investigar el segmento de cancelaciones no detectadas: clientes con 28 meses de
+   antigüedad mediana que se van sin señales previas.
+3. Establecer con el área comercial la relación de costos entre los dos tipos de error, que
+   es el dato que falta para fijar el umbral con fundamento.
+4. Eliminar `gender` del conjunto de atributos: no tiene aporte medible y su uso en
+   decisiones comerciales es cuestionable.
+
+---
+
+## Autor
+
+Sebastián Velasco Ardila
+Maestría en Ciencia de Datos, Universidad Pontificia Bolivariana
