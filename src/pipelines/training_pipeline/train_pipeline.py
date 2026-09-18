@@ -59,6 +59,12 @@ from pipelines.feature_pipeline.feature_pipeline import (  # noqa: E402
     IDENTIFICADOR,
     OBJETIVO,
 )
+from pipelines.training_pipeline.validacion_modelo import (  # noqa: E402
+    ResultadoValidacionModelo,
+    generar_curva_aprendizaje,
+    guardar_evidencia,
+    validar_modelo,
+)
 from pipelines.training_pipeline.verificacion_particion import (  # noqa: E402
     ResultadoParticion,
     verificar_particion,
@@ -68,6 +74,9 @@ RAIZ = Path(__file__).resolve().parents[3]
 ATRIBUTOS_POR_DEFECTO = RAIZ / "data" / "04_feature" / "telco_features.parquet"
 MODELO_POR_DEFECTO = RAIZ / "models" / "modelo_churn.joblib"
 METADATOS_POR_DEFECTO = RAIZ / "models" / "modelo_churn_metadatos.json"
+REPORTES = RAIZ / "reports"
+EVIDENCIA_POR_DEFECTO = REPORTES / "validacion_modelo.json"
+CURVA_POR_DEFECTO = REPORTES / "curva_aprendizaje.png"
 
 PROPORCION_PRUEBA = 0.2
 SEMILLA = 42
@@ -280,6 +289,43 @@ def medir_validacion_cruzada(
     }
 
 
+class ErrorDeModelo(Exception):
+    """Se levanta cuando el modelo entrenado no alcanza los criterios minimos."""
+
+
+def comprobar_modelo(
+    metricas_entrenamiento: dict[str, float],
+    metricas_prueba: dict[str, float],
+    resultados_cv: dict[str, float],
+) -> ResultadoValidacionModelo:
+    """Valida el rendimiento y la generalizacion del modelo recien entrenado.
+
+    Compara el desempeno en los tres conjuntos, diagnostica sobreajuste o subajuste
+    y contrasta contra la referencia de la prueba de concepto.
+    """
+    resultado = validar_modelo(
+        metricas_entrenamiento["f1"],
+        resultados_cv["f1_media"],
+        metricas_prueba["f1"],
+        resultados_cv["f1_desviacion"],
+    )
+
+    registro.info("Diagnostico de ajuste: %s", resultado.diagnostico)
+    for clave, valor in resultado.reporte.items():
+        registro.debug("Validacion | %s: %s", clave, valor)
+
+    for advertencia in resultado.advertencias:
+        registro.warning(advertencia)
+
+    if not resultado.valido:
+        for error in resultado.errores:
+            registro.error(error)
+        mensaje = f"El modelo no supero la validacion ({len(resultado.errores)} errores)"
+        raise ErrorDeModelo(mensaje)
+
+    return resultado
+
+
 def guardar_modelo(
     pipeline: Pipeline,
     metadatos: dict[str, Any],
@@ -325,6 +371,11 @@ def entrenar(origen: Path, destino_modelo: Path, destino_metadatos: Path) -> dic
 
     registro.info("Metricas en prueba: %s", metricas_prueba)
 
+    validacion = comprobar_modelo(metricas_entrenamiento, metricas_prueba, resultados_cv)
+    guardar_evidencia(validacion.reporte, EVIDENCIA_POR_DEFECTO)
+    generar_curva_aprendizaje(pipeline, entrenamiento_x, entrenamiento_y, CURVA_POR_DEFECTO)
+    registro.info("Evidencia de validacion escrita en %s", REPORTES)
+
     metadatos: dict[str, Any] = {
         "familia": "logistica",
         "umbral_decision": round(umbral, 6),
@@ -342,6 +393,7 @@ def entrenar(origen: Path, destino_modelo: Path, destino_metadatos: Path) -> dic
         "metricas_entrenamiento": metricas_entrenamiento,
         "validacion_cruzada": resultados_cv,
         "verificacion_particion": verificacion.reporte,
+        "validacion_modelo": validacion.reporte,
         "registros_entrenamiento": len(entrenamiento_x),
         "registros_prueba": len(prueba_x),
         "semilla": SEMILLA,
@@ -377,6 +429,9 @@ def main(argumentos: Sequence[str] | None = None) -> int:
 
     try:
         entrenar(opciones.atributos, opciones.modelo, opciones.metadatos)
+    except ErrorDeModelo as error:
+        registro.error("%s. El modelo no se considera apto.", error)
+        return 1
     except ErrorDeParticion as error:
         registro.error("%s. No se entreno ningun modelo.", error)
         return 1
