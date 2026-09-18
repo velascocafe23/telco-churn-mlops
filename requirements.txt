@@ -1,0 +1,14 @@
+# Dependencias para el despliegue en Streamlit Community Cloud.
+#
+# Se declaran las directas y se deja que la plataforma resuelva las transitivas.
+# scikit-learn va fijada a la version exacta con la que se serializo el modelo:
+# deserializar un pipeline con otra version produce avisos de incompatibilidad y,
+# ante cambios internos, puede fallar.
+streamlit>=1.64
+pandas>=3.0
+numpy>=2.5
+scikit-learn==1.9.1
+pyarrow>=25.0
+joblib>=1.6
+pandera>=0.33
+scipy>=1.18
