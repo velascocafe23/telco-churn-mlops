@@ -6,7 +6,7 @@
 # ante cambios internos, puede fallar.
 streamlit>=1.64
 pandas>=3.0
-numpy>=2.5
+numpy>=2.5.4
 scikit-learn==1.9.1
 pyarrow>=25.0
 joblib>=1.6
